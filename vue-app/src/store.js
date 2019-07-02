@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import { listStocks, listDestinations } from './api'
+import { listStocks, listDestinations, postShipment } from './api'
 
 Vue.use(Vuex)
 
@@ -8,7 +8,9 @@ const store = new Vuex.Store({
   state: {
     stocks: [],
     destinations: [],
-    selectedDestination: ''
+    selectedDestination: '',
+    message: '',
+    variant: ''
   },
   actions: {
     listStocksAction(context) {
@@ -25,7 +27,18 @@ const store = new Vuex.Store({
       listDestinations().then(data => {
         context.commit('listDestinations', data)
       })
-    }
+    },
+
+    postShipmentAction(context, payload) {
+      postShipment(payload).then(data => {
+        let itemStr = data.updated.reduce((acc, current) => {
+          return acc + '[物品名:' + current.title + ', 引当数量:' + current.reservation + ']'
+        }, '')
+        let message = data.destination.name + 'への出荷指示を行いました ' + itemStr
+        context.commit('updateMessage', {message: message, variant: 'success'})
+        context.dispatch('listStocksAction')
+      })
+    },
   },
   mutations: {
     listStocks(state, stocks) {
@@ -36,6 +49,11 @@ const store = new Vuex.Store({
       state.destinations = destinations
     },
 
+    updateMessage(state, val) {
+      state.message = val.message
+      state.variant = val.variant
+    },
+
     setSelectedDestination(state, destination) {
       state.selectedDestination = destination
     }
@@ -43,6 +61,8 @@ const store = new Vuex.Store({
   getters: {
     stocks: (state) => state.stocks,
     destinations: (state) => state.destinations,
+    message: (state) => state.message,
+    variant: (state) => state.variant,
     selectedDestination: (state) => state.selectedDestination
   }
 })

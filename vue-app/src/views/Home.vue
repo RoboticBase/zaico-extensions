@@ -15,6 +15,9 @@ export default {
   name: 'home',
   components: {
     Header
+  },
+  mounted: function() {
+    this.$store.commit('updateMessage', {message: '', variant: ''})
   }
 }
 </script>

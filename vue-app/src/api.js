@@ -1,10 +1,12 @@
 import axios from 'axios'
 
-export async function listStocks() {
-  const endpoint = '/api/v1/stocks/'
+const stockEndpoint = '/api/v1/stocks/'
+const destinationEndpoint = '/api/v1/destinations/'
+const shipmentEndpoint = '/api/v1/shipments/'
 
+export async function listStocks() {
   try {
-    const res = await axios.get(endpoint)
+    const res = await axios.get(stockEndpoint)
     return res.data
   } catch (error) {
     // eslint-disable-next-line
@@ -13,10 +15,18 @@ export async function listStocks() {
 }
 
 export async function listDestinations() {
-  const endpoint = '/api/v1/destinations/'
-
   try {
-    const res = await axios.get(endpoint)
+    const res = await axios.get(destinationEndpoint)
+    return res.data
+  } catch (error) {
+    // eslint-disable-next-line
+    console.log('error:' + error)
+  }
+}
+
+export async function postShipment(payload) {
+  try {
+    const res = await axios.post(shipmentEndpoint, payload)
     return res.data
   } catch (error) {
     // eslint-disable-next-line

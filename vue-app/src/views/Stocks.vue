@@ -1,6 +1,9 @@
 <template>
   <div class="stocks container">
     <Header/>
+    <div v-if="message">
+      <b-alert :variant="variant" show>{{ message }}</b-alert>
+    </div>
     <h3>在庫引当と出荷指示</h3>
     <table class="table">
       <thead>
@@ -20,7 +23,7 @@
           <td>{{ stock.category }}</td>
           <td>{{ stock.place }}</td>
           <td>{{ parseInt(stock.quantity) + stock.unit }}</td>
-          <td class="form-group"><input type=text class="form-control" v-model="stock.reservation"/></td>
+          <td class="form-group"><input type="number" class="form-control" v-model="stock.reservation"/></td>
         </tr>
       </tbody>
     </table>
@@ -43,7 +46,7 @@ export default {
     this.listStocksAction()
   },
   computed: {
-    ...mapGetters(['stocks'])
+    ...mapGetters(['stocks', 'message', 'variant'])
   },
   methods: {
     ...mapActions(['listStocksAction']),

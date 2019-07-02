@@ -1,23 +1,35 @@
 import os
 
-from flask import abort, jsonify
+from flask import abort, jsonify, request
 from flask.views import MethodView
 
 import requests
 
 ZAICO_ENDPOINT = 'https://web.zaico.co.jp/api/v1/inventories/'
 TOKEN = os.environ.get('TOKEN', '')
+ZAICO_HEADER = {
+    'Authorization': f'Bearer {TOKEN}',
+    'Content-Type': 'application/json'
+}
+
+DESTINATIONS = [
+    {
+        'id': 0,
+        'name': '',
+    },
+    {
+        'id': 1,
+        'name': 'LICTiA管理室',
+    },
+    {
+        'id': 2,
+        'name': 'オープンスペース',
+    }
+]
 
 
 class ZaikoAPI(MethodView):
     NAME = 'stockapi'
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.headers = {
-            'Authorization': f'Bearer {TOKEN}',
-            'Content-Type': 'application/json'
-        }
 
     def get(self, stock_id):
         if stock_id is None:
@@ -26,8 +38,8 @@ class ZaikoAPI(MethodView):
             return self._detail(stock_id)
 
     def _list(self):
-        result = requests.get(ZAICO_ENDPOINT, headers=self.headers)
-        # FIX ME check 'Total-Count' header and pagenation
+        result = requests.get(ZAICO_ENDPOINT, headers=ZAICO_HEADER)
+        # FIXME: check 'Total-Count' header and pagenation
         if result.status_code != 200:
             code = result.status_code if result.status_code in (404, ) else 500
             abort(code, {
@@ -38,7 +50,7 @@ class ZaikoAPI(MethodView):
             return result.text
 
     def _detail(self, stock_id):
-        result = requests.get(ZAICO_ENDPOINT + f'{stock_id}/', headers=self.headers)
+        result = requests.get(ZAICO_ENDPOINT + f'{stock_id}/', headers=ZAICO_HEADER)
         if result.status_code != 200:
             code = result.status_code if result.status_code in (404, ) else 500
             abort(code, {
@@ -52,21 +64,6 @@ class ZaikoAPI(MethodView):
 class DestinationAPI(MethodView):
     NAME = 'destinationapi'
 
-    DESTINATIONS = [
-        {
-            'id': 0,
-            'name': '',
-        },
-        {
-            'id': 1,
-            'name': 'LICTiA管理室',
-        },
-        {
-            'id': 2,
-            'name': 'オープンスペース',
-        }
-    ]
-
     def get(self, destination_id):
         if destination_id is None:
             return self._list()
@@ -74,11 +71,11 @@ class DestinationAPI(MethodView):
             return self._detail(destination_id)
 
     def _list(self):
-        return jsonify(DestinationAPI.DESTINATIONS)
+        return jsonify(DESTINATIONS)
 
     def _detail(self, destination_id):
         try:
-            return jsonify(next(e for e in DestinationAPI.DESTINATIONS if e['id'] == int(destination_id)))
+            return jsonify(next(e for e in DESTINATIONS if e['id'] == int(destination_id)))
         except StopIteration:
             abort(404, {
                 'message': f'destination(id={destination_id}) does not found',
@@ -88,3 +85,68 @@ class DestinationAPI(MethodView):
                 'message': 'can not get destination detail',
                 'root_cause': str(e)
             })
+
+
+class ShipmentAPI(MethodView):
+    NAME = 'shipmentapi'
+
+    def post(self):
+        payload = request.json
+
+        if not isinstance(payload, dict):
+            abort(400, {
+                'message': 'invalid payload',
+            })
+
+        res = {
+            'result': None,
+            'destination': {},
+            'updated': [],
+        }
+
+        # FIXME: exclusion control
+        for elem in payload['items']:
+            reservation = int(float(elem.get('reservation', '0')))
+            id = elem.get('id', '0')
+            url = ZAICO_ENDPOINT + f'{id}/'
+
+            result = requests.get(url, headers=ZAICO_HEADER)
+            if result.status_code != 200:
+                code = result.status_code if result.status_code in (404, ) else 500
+                abort(code, {
+                    'message': 'can not get stock detail from zaico',
+                    'root_cause': result.json(),
+                })
+            current_item = result.json()
+            current_quantity = int(float(current_item['quantity']))
+
+            new_quantity = current_quantity - reservation
+            if new_quantity < 0:
+                abort(400, {
+                    'message': f'current quantity ({current_quantity}) is less than the reservation ({reservation})'
+                })
+
+            result = requests.put(url, headers=ZAICO_HEADER, json={'quantity': new_quantity})
+            if result.status_code not in (200, 201, ):
+                code = result.status_code if result.status_code in (404, ) else 500
+                abort(code, {
+                    'message': 'can not put stock detail to zaico',
+                    'root_cause': result.json(),
+                })
+
+            res['updated'].append({
+                'id': id,
+                'prev_quantity': current_quantity,
+                'new_quantity': new_quantity,
+                'reservation': reservation,
+                'title': current_item['title'],
+                'unit': current_item['unit'],
+                'category': current_item['category'],
+                'place': current_item['place'],
+                'code': current_item['code'],
+            })
+        destination = next(e for e in DESTINATIONS if e['id'] == int(payload['destination_id']))
+
+        res['result'] = 'success'
+        res['destination'] = destination
+        return jsonify(res), 201

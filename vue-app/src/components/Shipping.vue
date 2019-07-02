@@ -26,15 +26,29 @@ export default {
     ...mapGetters(['stocks', 'destinations', 'selectedDestination'])
   },
   methods: {
-    ...mapActions(['listDestinationsAction']),
+    ...mapActions(['listDestinationsAction', 'postShipmentAction']),
 
     setSelectedDestination(destination) {
       this.$store.commit('setSelectedDestination', destination)
     },
 
     shipping() {
-      console.log(this.stocks)
-      console.log(this.selectedDestination)
+      let items = this.stocks.filter((stock) => stock.reservation > 0).map((stock) => {
+        return {
+          id: stock.id,
+          reservation: stock.reservation
+        }
+      })
+
+      if (this.selectedDestination != '' && items.length > 0) {
+        let payload = {
+          destination_id: this.selectedDestination,
+          items: items
+        }
+        this.postShipmentAction(payload)
+      } else {
+        this.$store.commit('updateMessage', {message: '入力値に誤りがあります', variant: 'warning'})
+      }
     }
   }
 }
