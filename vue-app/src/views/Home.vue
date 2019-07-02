@@ -1,9 +1,9 @@
 <template>
-  <div class="home">
+  <div class="home container">
     <Header/>
-    <ul>
-      <li><router-link to="/stocks">商品一覧</router-link></li>
-    </ul>
+    <div class="row">
+      <div class="col-sm"><router-link to="/stocks">在庫引当と出荷指示</router-link></div>
+    </div>
   </div>
 </template>
 
