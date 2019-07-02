@@ -13,11 +13,15 @@ app = Flask(__name__,
             template_folder=VUE_DIR
             )
 app.config.from_object(__name__)
+app.config['JSON_AS_ASCII'] = False
 
 zaiko_api_view = api.ZaikoAPI.as_view(api.ZaikoAPI.NAME)
 app.add_url_rule('/api/v1/stocks/', defaults={'stock_id': None}, view_func=zaiko_api_view, methods=['GET', ])
-app.add_url_rule('/api/v1/stocks/', view_func=zaiko_api_view, methods=['POST', ])
-app.add_url_rule('/api/v1/stocks/<int:stock_id>/', view_func=zaiko_api_view, methods=['GET', 'PUT', 'DELETE'])
+app.add_url_rule('/api/v1/stocks/<stock_id>/', view_func=zaiko_api_view, methods=['GET', ])
+
+destination_api_view = api.DestinationAPI.as_view(api.DestinationAPI.NAME)
+app.add_url_rule('/api/v1/destinations/', defaults={'destination_id': None}, view_func=destination_api_view, methods=['GET', ])
+app.add_url_rule('/api/v1/destinations/<destination_id>/', view_func=destination_api_view, methods=['GET', ])
 
 app.register_blueprint(vue.app)
 app.register_blueprint(errors.app)

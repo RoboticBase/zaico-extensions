@@ -1,29 +1,13 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import axios from 'axios'
+import { listStocks, listDestinations } from './api'
 
 Vue.use(Vuex)
-
-async function listStocks() {
-  const endpoint = '/api/v1/stocks/'
-
-  try {
-    const res = await axios.get(endpoint)
-    return res.data
-  } catch (error) {
-    // eslint-disable-next-line
-    console.log('error:' + error)
-  }
-}
 
 const store = new Vuex.Store({
   state: {
     stocks: [],
-    destinations: [
-      {id: -1, name: ''},
-      {id: 1, name: 'LICTiA管理室'},
-      {id: 2, name: 'オープンスペース'}
-    ],
+    destinations: [],
     selectedDestination: ''
   },
   actions: {
@@ -35,12 +19,23 @@ const store = new Vuex.Store({
         })
         context.commit('listStocks', stocks)
       })
+    },
+
+    listDestinationsAction(context) {
+      listDestinations().then(data => {
+        context.commit('listDestinations', data)
+      })
     }
   },
   mutations: {
     listStocks(state, stocks) {
       state.stocks = stocks
     },
+
+    listDestinations(state, destinations) {
+      state.destinations = destinations
+    },
+
     setSelectedDestination(state, destination) {
       state.selectedDestination = destination
     }
