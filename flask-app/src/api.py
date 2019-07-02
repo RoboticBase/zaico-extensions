@@ -3,12 +3,13 @@ import os
 from flask import abort, jsonify, request
 from flask.views import MethodView
 
+from src import const
+
 import requests
 
-ZAICO_ENDPOINT = 'https://web.zaico.co.jp/api/v1/inventories/'
-TOKEN = os.environ.get('TOKEN', '')
+ZAICO_TOKEN = os.environ.get(const.ZAICO_TOKEN, '')
 ZAICO_HEADER = {
-    'Authorization': f'Bearer {TOKEN}',
+    'Authorization': f'Bearer {ZAICO_TOKEN}',
     'Content-Type': 'application/json'
 }
 
@@ -38,7 +39,7 @@ class ZaikoAPI(MethodView):
             return self._detail(stock_id)
 
     def _list(self):
-        result = requests.get(ZAICO_ENDPOINT, headers=ZAICO_HEADER)
+        result = requests.get(const.ZAICO_ENDPOINT, headers=ZAICO_HEADER)
         # FIXME: check 'Total-Count' header and pagenation
         if result.status_code != 200:
             code = result.status_code if result.status_code in (404, ) else 500
@@ -50,7 +51,7 @@ class ZaikoAPI(MethodView):
             return result.text
 
     def _detail(self, stock_id):
-        result = requests.get(ZAICO_ENDPOINT + f'{stock_id}/', headers=ZAICO_HEADER)
+        result = requests.get(const.ZAICO_ENDPOINT + f'{stock_id}/', headers=ZAICO_HEADER)
         if result.status_code != 200:
             code = result.status_code if result.status_code in (404, ) else 500
             abort(code, {
@@ -108,7 +109,7 @@ class ShipmentAPI(MethodView):
         for elem in payload['items']:
             reservation = int(float(elem.get('reservation', '0')))
             id = elem.get('id', '0')
-            url = ZAICO_ENDPOINT + f'{id}/'
+            url = const.ZAICO_ENDPOINT + f'{id}/'
 
             result = requests.get(url, headers=ZAICO_HEADER)
             if result.status_code != 200:

@@ -3,17 +3,15 @@
 import os
 from flask import Flask
 
-from src import api, vue, errors
+from src import api, const, vue, errors
 
-VUE_DIR = '../vue-app/dist'
 DEBUG = True
 
 app = Flask(__name__,
-            static_folder=os.path.join(VUE_DIR, 'static'),
-            template_folder=VUE_DIR
+            static_folder=const.VUE_STATIC_FOLDER,
+            template_folder=const.VUE_TEMPLATE_FOLDER
             )
-app.config.from_object(__name__)
-app.config['JSON_AS_ASCII'] = False
+app.config.from_pyfile('config.cfg')
 
 zaiko_api_view = api.ZaikoAPI.as_view(api.ZaikoAPI.NAME)
 app.add_url_rule('/api/v1/stocks/', defaults={'stock_id': None}, view_func=zaiko_api_view, methods=['GET', ])
@@ -31,4 +29,12 @@ app.register_blueprint(errors.app)
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=3000)
+    default_port = app.config['DEFAULT_PORT']
+    try:
+        port = int(os.environ.get(const.LISTEN_PORT, str(default_port)))
+        if port < 1 or 65535 < port:
+            port = default_port
+    except ValueError:
+        port = default_port
+
+    app.run(host="0.0.0.0", port=port)
