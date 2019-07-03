@@ -12,6 +12,10 @@ ZAICO_HEADER = {
     'Authorization': f'Bearer {ZAICO_TOKEN}',
     'Content-Type': 'application/json'
 }
+SHIPMENTAPI_ENDPOINT = os.environ[const.SHIPMENTAPI_ENDPOINT]
+SHIPMENTAPI_HEADER = {
+    'Content-Type': 'application/json'
+}
 
 DESTINATIONS = [
     {
@@ -99,6 +103,13 @@ class ShipmentAPI(MethodView):
                 'message': 'invalid payload',
             })
 
+        # FIXME: transaction control
+        res = self._update_zaico(payload)
+        self._notify_shipment(res)
+
+        return jsonify(res), 201
+
+    def _update_zaico(self, payload):
         res = {
             'result': None,
             'destination': {},
@@ -150,4 +161,10 @@ class ShipmentAPI(MethodView):
 
         res['result'] = 'success'
         res['destination'] = destination
-        return jsonify(res), 201
+
+        return res
+
+    def _notify_shipment(self, res):
+        result = requests.post(SHIPMENTAPI_ENDPOINT, headers=SHIPMENTAPI_HEADER, json=res)
+
+        return result

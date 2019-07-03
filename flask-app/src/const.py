@@ -1,6 +1,7 @@
 # environment variable name
 LISTEN_PORT = 'LISTEN_PORT'
 ZAICO_TOKEN = 'ZAICO_TOKEN'
+SHIPMENTAPI_ENDPOINT = 'SHIPMENTAPI_ENDPOINT'
 
 # const
 ZAICO_ENDPOINT = 'https://web.zaico.co.jp/api/v1/inventories/'
