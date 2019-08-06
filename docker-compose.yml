@@ -1,0 +1,12 @@
+version: "3"
+
+services:
+  zaico-extensions:
+    build: .
+    environment:
+      LISTEN_PORT: "3000"
+      ZAICO_TOKEN: "${ZAICO_TOKEN}"
+      SHIPMENTAPI_ENDPOINT: "http://${HOST_IPADDR}:8080/controller/api/v1/shipments/"
+      SHIPMENTAPI_TOKEN: "${TOKEN}"
+    ports:
+      - "3000:3000"
