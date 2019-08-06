@@ -13,9 +13,6 @@ ZAICO_HEADER = {
     'Content-Type': 'application/json'
 }
 SHIPMENTAPI_ENDPOINT = os.environ[const.SHIPMENTAPI_ENDPOINT]
-SHIPMENTAPI_HEADER = {
-    'Content-Type': 'application/json'
-}
 
 DESTINATIONS = [
     {
@@ -95,6 +92,14 @@ class DestinationAPI(MethodView):
 class ShipmentAPI(MethodView):
     NAME = 'shipmentapi'
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._shipmentapi_header = {
+            'Content-Type': 'application/json'
+        }
+        if const.SHIPMENTAPI_TOKEN in os.environ:
+            self._shipmentapi_header['Authorization'] = f'Bearer {os.environ[const.SHIPMENTAPI_TOKEN]}'
+
     def post(self):
         payload = request.json
 
@@ -165,6 +170,5 @@ class ShipmentAPI(MethodView):
         return res
 
     def _notify_shipment(self, res):
-        result = requests.post(SHIPMENTAPI_ENDPOINT, headers=SHIPMENTAPI_HEADER, json=res)
-
+        result = requests.post(SHIPMENTAPI_ENDPOINT, headers=self._shipmentapi_header, json=res)
         return result
