@@ -4,6 +4,7 @@ from flask import abort, jsonify, request
 from flask.views import MethodView
 
 from src import const
+from src.errors import RobotBusyError, RBError
 
 import requests
 
@@ -21,12 +22,17 @@ DESTINATIONS = [
     },
     {
         'id': 1,
-        'name': 'LICTiA管理室',
+        'name': '会議室1',
     },
     {
         'id': 2,
-        'name': 'オープンスペース',
+        'name': '会議室2',
+    },
+    {
+        'id': 3,
+        'name': '会議室3',
     }
+
 ]
 
 
@@ -89,16 +95,23 @@ class DestinationAPI(MethodView):
             })
 
 
-class ShipmentAPI(MethodView):
-    NAME = 'shipmentapi'
-
+class RBMixin:
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._shipmentapi_header = {
-            'Content-Type': 'application/json'
-        }
-        if const.SHIPMENTAPI_TOKEN in os.environ:
-            self._shipmentapi_header['Authorization'] = f'Bearer {os.environ[const.SHIPMENTAPI_TOKEN]}'
+        self._rb_headers = None
+
+    @property
+    def rb_headers(self):
+        if not self._rb_headers:
+            self._rb_headers = {
+                'Content-Type': 'application/json'
+            }
+            if const.SHIPMENTAPI_TOKEN in os.environ:
+                self._rb_headers['Authorization'] = f'Bearer {os.environ[const.SHIPMENTAPI_TOKEN]}'
+        return self._rb_headers
+
+
+class ShipmentAPI(RBMixin, MethodView):
+    NAME = 'shipmentapi'
 
     def post(self):
         payload = request.json
@@ -109,10 +122,32 @@ class ShipmentAPI(MethodView):
             })
 
         # FIXME: transaction control
-        res = self._update_zaico(payload)
-        self._notify_shipment(res)
+        try:
+            zaico_res = self._update_zaico(payload)
+            print(f'zaico_result {zaico_res}')
 
-        return jsonify(res), 201
+            rb_res = self._notify_shipment(zaico_res)
+            print(f'rb_result {rb_res}')
+
+            zaico_res.update(rb_res)
+            return jsonify(zaico_res), 201
+        except RobotBusyError as e:
+            is_compensated, compensated = self._compensate_zaico(zaico_res)
+            if is_compensated:
+                return jsonify({'result': 'robot_busy', 'message': str(e), 'robot_id': e.robot_id}), e.status_code
+            else:
+                print(f'compensatation of Zaico is failed, {compensated}')
+                abort(500, {
+                    'message': 'can not get destination detail',
+                    'root_cause': str(e)
+                })
+        except Exception as e:
+            is_compensated, compensated = self._compensate_zaico(zaico_res)
+            print(f'compensatation of Zaico is failed, {compensated}')
+            abort(500, {
+                'message': 'exception occured when notify shipment',
+                'root_cause': str(e)
+            })
 
     def _update_zaico(self, payload):
         res = {
@@ -169,6 +204,35 @@ class ShipmentAPI(MethodView):
 
         return res
 
+    def _compensate_zaico(self, zaico_res):
+        is_compensated = True
+        compensated = {
+            'automatically_compensated': [],
+            'need_to_manual_compensate': [],
+        }
+
+        for elem in zaico_res['updated']:
+            id = elem['id']
+            prev_quantity = elem['prev_quantity']
+            url = const.ZAICO_ENDPOINT + f'{id}/'
+
+            result = requests.put(url, headers=ZAICO_HEADER, json={'quantity': prev_quantity})
+
+            if result.status_code not in (200, 201, ):
+                is_compensated = False
+                compensated['need_to_manual_compensate'].append(elem)
+            else:
+                compensated['automatically_compensated'].append(elem)
+
+        print(f'compensate zaico result: is_compensated={is_compensated}, compensated={compensated}')
+        return is_compensated, compensated
+
     def _notify_shipment(self, res):
-        result = requests.post(SHIPMENTAPI_ENDPOINT, headers=self._shipmentapi_header, json=res)
-        return result
+        result = requests.post(SHIPMENTAPI_ENDPOINT, headers=self.rb_headers, json=res)
+        if 200 <= result.status_code < 300:
+            return result.json()
+        elif result.status_code == 423:
+            j = result.json()
+            raise RobotBusyError(j['message'], status_code=result.status_code, robot_id=j['id'])
+        else:
+            raise RBError(result.text, status_code=result.status_code)

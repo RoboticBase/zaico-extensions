@@ -30,13 +30,21 @@ const store = new Vuex.Store({
     },
 
     postShipmentAction(context, payload) {
-      postShipment(payload).then(data => {
-        let itemStr = data.updated.reduce((acc, current) => {
-          return acc + '[物品名:' + current.title + ', 引当数量:' + current.reservation + ']'
-        }, '')
-        let message = data.destination.name + 'への出荷指示を行いました ' + itemStr
-        context.commit('updateMessage', {message: message, variant: 'success'})
-        context.dispatch('listStocksAction')
+      postShipment(payload).then(res => {
+        if (res.is_busy) {
+          console.log('@@@@', res)
+          let message = '配送ロボット(' + res.data.robot_id + ')は作業中のため、出荷指示は取り消されました。少し待ってからもう一度お試しください。'
+          context.commit('updateMessage', {message: message, variant: 'warning'})
+          context.dispatch('listStocksAction')
+        }
+        else {
+          let itemStr = res.data.updated.reduce((acc, current) => {
+            return acc + '[物品名:' + current.title + ', 引当数量:' + current.reservation + ']'
+          }, '')
+          let message = '配送ロボット(' + res.data.delivery_robot.id + ')への出荷指示を行いました。出荷先: ' + res.data.destination.name + ', 出荷商品: ' + itemStr
+          context.commit('updateMessage', {message: message, variant: 'success'})
+          context.dispatch('listStocksAction')
+        }
       })
     },
   },
