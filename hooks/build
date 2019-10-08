@@ -1,0 +1,5 @@
+#!/bin/bash
+set -eu
+
+docker run -v $(pwd)/vue-app:/opt/vue-app -w /opt/vue-app node:10.16-alpine /bin/ash -c 'rm -rf dist && rm -rf node_modules && npm install && npm audit fix && npm run build'
+docker build -t ${IMAGE_NAME} .
