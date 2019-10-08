@@ -1,9 +1,6 @@
 <template>
   <div class="stocks container">
     <Header/>
-    <div v-if="message">
-      <b-alert :variant="variant" show>{{ message }}</b-alert>
-    </div>
     <h3>在庫引当と出荷指示</h3>
     <table class="table">
       <thead>
@@ -28,19 +25,22 @@
       </tbody>
     </table>
     <Shipping/>
+    <Alert/>
   </div>
 </template>
 
 <script>
 import Header from '@/components/Header.vue'
 import Shipping from '@/components/Shipping.vue'
+import Alert from '@/components/Alert.vue'
 import { mapActions, mapGetters } from 'vuex'
 
 export default {
   name: 'stocks',
   components: {
     Header,
-    Shipping
+    Shipping,
+    Alert
   },
   created: function () {
     this.listStocksAction()
