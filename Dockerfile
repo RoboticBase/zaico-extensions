@@ -1,11 +1,27 @@
-FROM python:3.7-alpine3.10
+FROM node:10.16-alpine as build-stage
+MAINTAINER Nobuyuki Matsui <nobuyuki.matsui@gmail.com>
+
+WORKDIR /opt/app
+COPY ./vue-app/package.json /opt/app/
+COPY ./vue-app/package-lock.json /opt/app/
+COPY ./vue-app/babel.config.js /opt/app/
+COPY ./vue-app/postcss.config.js /opt/app/
+COPY ./vue-app/vue.config.js /opt/app/
+COPY ./vue-app/.browserslistrc /opt/app/
+COPY ./vue-app/.eslintrc.js /opt/app/
+COPY ./vue-app/public/ /opt/app/public/
+COPY ./vue-app/src/ /opt/app/src/
+RUN npm install && npm run build
+
+
+FROM python:3.7-alpine3.10 as production-stage
 MAINTAINER Nobuyuki Matsui <nobuyuki.matsui@gmail.com>
 
 ARG LISTEN_PORT
 ENV LISTEN_PORT ${LISTEN_PORT:-3000}
 
 COPY ./flask-app /opt/flask-app
-COPY ./vue-app/dist /opt/vue-app/dist
+COPY --from=build-stage /opt/app/dist /opt/vue-app/dist
 
 WORKDIR /opt/flask-app
 
