@@ -231,8 +231,8 @@ class ShipmentAPI(RBMixin, MethodView):
         result = requests.post(SHIPMENTAPI_ENDPOINT, headers=self.rb_headers, json=res)
         if 200 <= result.status_code < 300:
             return result.json()
-        elif result.status_code == 423:
+        elif result.status_code in [422, 423]:
             j = result.json()
-            raise RobotBusyError(j['message'], status_code=result.status_code, robot_id=j['id'])
+            raise RobotBusyError(j['message'], status_code=result.status_code, robot_id=j.get('id', None))
         else:
             raise RBError(result.text, status_code=result.status_code)

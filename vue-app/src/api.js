@@ -27,10 +27,13 @@ export async function listDestinations() {
 export async function postShipment(payload) {
   try {
     const res = await axios.post(shipmentEndpoint, payload)
-    return {data: res.data, is_busy: false}
+    return {data: res.data, is_busy: false, is_navi: false}
   } catch (error) {
-    if (error.response.status == 423) {
-      return {data: error.response.data, is_busy: true}
+    if (error.response.status == 422) {
+      return {data: error.response.data, is_busy: true, is_navi: false}
+    }
+    else if (error.response.status == 423) {
+      return {data: error.response.data, is_busy: false, is_navi: true}
     }
     // eslint-disable-next-line
     console.log('error:' + error)
