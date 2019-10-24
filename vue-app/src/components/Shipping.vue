@@ -8,7 +8,7 @@
         </select>
       </div>
       <div class="col-sm-4 align-self-end">
-        <button type="submit" class="btn btn-primary float-right" @click="shipping">注文</button>
+        <b-button variant="primary" class="float-right" @click="shipping">注文</b-button>
       </div>
     </div>
     <div v-if="errmsg">
@@ -24,7 +24,8 @@ export default {
   name: 'shipping',
   data () {
     return {
-      errmsg: null
+      errmsg: null,
+      processing: false,
     }
   },
   created () {
@@ -41,6 +42,8 @@ export default {
     },
 
     shipping() {
+      if (this.processing) return
+      this.processing = true
       this.errmsg = null
       let items = this.stocks.filter((stock) => stock.reservation > 0).map((stock) => {
         return {
@@ -53,11 +56,14 @@ export default {
         let payload = {
           destination_id: this.selectedDestination,
           items: items,
-          success: (params) => {
-            this.$router.push({name: 'ordered', params: params})
+          success: (data) => {
+            this.$store.commit('addOrder', data)
+            this.processing = false
+            this.$router.push({name: 'ordered', params: {data: data}})
           },
           failure: (message) => {
             this.errmsg = message
+            this.processing = false
           },
         }
         this.$store.commit('updateMessage', {message: '処理中', variant: 'info'})
