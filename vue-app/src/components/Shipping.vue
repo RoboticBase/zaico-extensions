@@ -2,13 +2,14 @@
   <div class="shipping container">
     <div class="row form-group">
       <div class="col-sm-8">
-        <label for="destination">出荷先:</label>
+        <label for="destination">送り先:</label>
         <select id="destination" class="form-control" @input="setSelectedDestination($event.target.value)">
           <option v-for="destination in destinations" :key="destination.id" v-bind:value="destination.id">{{ destination.name }}</option>
         </select>
       </div>
       <div class="col-sm-4 align-self-end">
-        <button type="submit" class="btn btn-primary float-right" @click="shipping">出荷指示</button>
+        <b-button :to="{ name: 'stocks'}" variant="outline-default">戻る</b-button>
+        <button type="submit" class="btn btn-primary float-right" @click="shipping">注文</button>
       </div>
     </div>
   </div>
@@ -43,8 +44,13 @@ export default {
       if (this.selectedDestination != '' && items.length > 0) {
         let payload = {
           destination_id: this.selectedDestination,
-          items: items
+          items: items,
+          cb: () => {
+            this.$store.commit('resetStocks')
+            this.$router.push({name: 'stocks'})
+          }
         }
+        this.$store.commit('updateMessage', {message: '処理中', variant: 'info'})
         this.postShipmentAction(payload)
       } else {
         this.$store.commit('updateMessage', {message: '入力値に誤りがあります', variant: 'warning'})

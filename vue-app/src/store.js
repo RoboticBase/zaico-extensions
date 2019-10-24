@@ -14,13 +14,15 @@ const store = new Vuex.Store({
   },
   actions: {
     listStocksAction(context) {
-      listStocks().then(data => {
-        let stocks = data.map((elem) => {
-            elem.reservation = 0
-            return elem
+      if (context.state.stocks.length == 0) {
+        listStocks().then(data => {
+          let stocks = data.map((elem) => {
+              elem.reservation = 0
+              return elem
+          })
+          context.commit('listStocks', stocks)
         })
-        context.commit('listStocks', stocks)
-      })
+      }
     },
 
     listDestinationsAction(context) {
@@ -37,15 +39,18 @@ const store = new Vuex.Store({
           }, '')
           let message = '配送ロボット(' + res.data.delivery_robot.id + ')への出荷指示を行いました。出荷先: ' + res.data.destination.name + ', 出荷商品: ' + itemStr
           context.commit('updateMessage', {message: message, variant: 'success'})
-          context.dispatch('listStocksAction')
+          // context.dispatch('listStocksAction')
+          payload.cb()
         } else if (res.is_busy) {
           let message = '待機中の配送ロボットが無いため、出荷指示は取り消されました。少し待ってからもう一度お試しください。'
           context.commit('updateMessage', {message: message, variant: 'warning'})
-          context.dispatch('listStocksAction')
+          // context.dispatch('listStocksAction')
+          payload.cb()
         } else if (res.is_navi) {
           let message = '配送ロボット(' + res.data.robot_id + ')は作業中のため、出荷指示は取り消されました。少し待ってからもう一度お試しください。'
           context.commit('updateMessage', {message: message, variant: 'warning'})
-          context.dispatch('listStocksAction')
+          // context.dispatch('listStocksAction')
+          payload.cb()
         }
         else {
           throw new Error('unsupported api result')
@@ -69,7 +74,15 @@ const store = new Vuex.Store({
 
     setSelectedDestination(state, destination) {
       state.selectedDestination = destination
-    }
+    },
+
+    updateStock(state, val) {
+      state.stocks[val.idx] = val.stock
+    },
+
+    resetStocks(state) {
+      state.stocks = []
+    },
   },
   getters: {
     stocks: (state) => state.stocks,
