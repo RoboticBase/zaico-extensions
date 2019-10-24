@@ -24,7 +24,9 @@
         </div>
       </div>
     </div>
-    <Shipping/>
+    <div v-if="items.length > 0">
+      <Shipping/>
+    </div>
     <Alert/>
   </div>
 </template>

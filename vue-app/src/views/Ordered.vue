@@ -1,16 +1,18 @@
 <template>
   <div class="cart container">
     <Header/>
-    <div class="row">
-      <div class="col-8">
-        <h4>注文完了</h4>
+    <div v-if="data">
+      <div class="row">
+        <div class="col-8">
+          <h4>注文完了</h4>
+        </div>
+        <div class="col">
+          <b-button variant="outline-default" @click="back">戻る</b-button>
+        </div>
       </div>
-      <div class="col">
-        <b-button variant="outline-default" @click="back">戻る</b-button>
-      </div>
+      <p>注文を受け付けました。配送ロボット（{{data.delivery_robot.id}}）が商品を配送します。</p>
+      <p>お届け先：{{ data.destination.name }}</p>
     </div>
-    <p>注文を受け付けました。配送ロボット（{{data.delivery_robot.id}}）が商品を配送します。</p>
-    <p>お届け先：{{ data.destination.name }}</p>
     <Alert/>
   </div>
 </template>
@@ -33,6 +35,11 @@ export default {
     itemStr () {
       return this.$route.params.itemStr
     },
+  },
+  mounted () {
+    if (!this.data) {
+      this.$router.push({name: 'stocks'})
+    }
   },
   methods: {
     back () {
