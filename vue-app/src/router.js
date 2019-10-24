@@ -4,6 +4,7 @@ import Stocks from '@/views/Stocks.vue'
 import Detail from '@/views/Detail.vue'
 import Cart from '@/views/Cart.vue'
 import Ordered from '@/views/Ordered.vue'
+import Histories from '@/views/Histories.vue'
 import BootstrapVue from 'bootstrap-vue'
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
@@ -38,6 +39,11 @@ export default new Router({
       path: '/ordered',
       name: 'ordered',
       component: Ordered
+    },
+    {
+      path: '/histories',
+      name: 'histories',
+      component: Histories
     }
   ]
 })

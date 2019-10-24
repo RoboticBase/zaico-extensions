@@ -10,7 +10,8 @@ const store = new Vuex.Store({
     destinations: [],
     selectedDestination: '',
     message: '',
-    variant: ''
+    variant: '',
+    ordered: []
   },
   actions: {
     listStocksAction(context) {
@@ -34,10 +35,7 @@ const store = new Vuex.Store({
     postShipmentAction(context, payload) {
       postShipment(payload).then(res => {
         if (!res.is_busy && !res.is_navi) {
-          let itemStr = res.data.updated.reduce((acc, current) => {
-            return acc + '[物品名:' + current.title + ', 引当数量:' + current.reservation + ']'
-          }, '')
-          payload.success({data: res.data, itemStr: itemStr})
+          payload.success(res.data)
         } else if (res.is_busy) {
           let message = '待機中の配送ロボットが無いため、注文は取り消されました。少し待ってからもう一度お試しください。'
           payload.failure(message)
@@ -77,13 +75,19 @@ const store = new Vuex.Store({
     resetStocks(state) {
       state.stocks = []
     },
+
+    addOrder(state, data) {
+      data.orderDate = (new Date()).toISOString()
+      state.ordered.push(data)
+    }
   },
   getters: {
     stocks: (state) => state.stocks,
     destinations: (state) => state.destinations,
     message: (state) => state.message,
     variant: (state) => state.variant,
-    selectedDestination: (state) => state.selectedDestination
+    selectedDestination: (state) => state.selectedDestination,
+    ordered: (state) => state.ordered,
   }
 })
 
