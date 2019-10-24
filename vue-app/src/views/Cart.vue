@@ -1,7 +1,14 @@
 <template>
   <div class="cart container">
     <Header/>
-    <h5>カートの内容</h5>
+    <div class="row">
+      <div class="col-8">
+        <h4>カートの内容</h4>
+      </div>
+      <div class="col">
+        <b-button :to="{ name: 'stocks'}" variant="outline-default">戻る</b-button>
+      </div>
+    </div>
     <div class="row">
       <div class="col-sm-6 col-md-3" v-for="item in items" :key="item.id">
         <div class="card img-thumbnail">
@@ -14,7 +21,7 @@
             <p class="card-text">在庫数：{{ parseInt(item.quantity) + item.unit }}</p>
             <p class="card-text">注文数：{{ parseInt(item.reservation) + item.unit }}</p>
           </div>
-        <div>
+        </div>
       </div>
     </div>
     <Shipping/>

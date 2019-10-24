@@ -3,6 +3,7 @@ import Router from 'vue-router'
 import Stocks from '@/views/Stocks.vue'
 import Detail from '@/views/Detail.vue'
 import Cart from '@/views/Cart.vue'
+import Ordered from '@/views/Ordered.vue'
 import BootstrapVue from 'bootstrap-vue'
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
@@ -32,6 +33,11 @@ export default new Router({
       path: '/cart',
       name: 'cart',
       component: Cart
+    },
+    {
+      path: '/ordered',
+      name: 'ordered',
+      component: Ordered
     }
   ]
 })
