@@ -20,6 +20,11 @@
             <div v-for="item in order.updated" :key="item.id">
               <b-card-text><b>{{ item.title}}</b><br/>を{{ item.place }}から{{ parseInt(item.reservation) + item.unit }}</b-card-text>
             </div>
+            <div>
+              <hr/>
+              <b-card-text>受取コード</b-card-text>
+              <vue-qrcode :value="targetText(order)" :options="option" tag="img"></vue-qrcode>
+            </div>
           </b-card-body>
         </b-collapse>
       </b-card>
@@ -32,15 +37,40 @@
 import Header from '@/components/Header.vue'
 import Alert from '@/components/Alert.vue'
 import { mapGetters } from 'vuex'
+import VueQrcode from "@chenfengyuan/vue-qrcode"
 
 export default {
   name: 'histories',
   components: {
     Header,
-    Alert
+    Alert,
+    VueQrcode
+  },
+  data () {
+    return {
+      option: {
+        errorCorrectionLevel: "M",
+        maskPattern: 0,
+        margin: 1,
+        scale: 4,
+        width: 300,
+        color: {
+          dark: "#000000FF",
+          light: "#FFFFFFFF"
+        }
+      },
+    }
   },
   computed: {
     ...mapGetters(['ordered']),
-  }
+  },
+  methods: {
+    targetText (order) {
+      let items = order.updated.reduce((acc, current) => {
+        return acc + '[title:' + current.title + ', num:' + current.reservation + '] '
+      }, '')
+      return order.orderDate + ' robot:' + order.delivery_robot.id + ' dest:' + order.destination.name + ' items: ' + items
+    },
+  },
 }
 </script>
