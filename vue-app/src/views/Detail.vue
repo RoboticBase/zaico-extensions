@@ -2,6 +2,7 @@
   <div class="detail container">
     <Header/>
     <div v-if="stock">
+      <SubTitle subtitle=""/>
       <div class="card img-thumbnail">
         <img class="card-img-top" :src="stock.item_image.url">
         <div class="card-body px-2 py-3">
@@ -11,7 +12,7 @@
           <p class="card-text">倉庫：{{ stock.place }}</p>
           <p class="card-text">在庫数：{{ parseInt(stock.quantity) + stock.unit }}</p>
           <p class="card-text form-group">注文数：<input type="number" class="form-control" v-model.number="reservation"/></p>
-          <p class="mb-0 form-group"><b-button :to="{ name: 'stocks'}" variant="outline-default">戻る</b-button><b-button @click="reserve" variant="outline-primary">カートに入れる</b-button></p>
+          <p class="mb-0 form-group"><b-button @click="reserve" variant="outline-primary">カートに入れる</b-button></p>
         </div>
       </div>
     </div>
@@ -21,12 +22,14 @@
 
 <script>
 import Header from '@/components/Header.vue'
+import SubTitle from '@/components/SubTitle.vue'
 import Alert from '@/components/Alert.vue'
 
 export default {
   name: 'detail',
   components: {
     Header,
+    SubTitle,
     Alert
   },
   data () {

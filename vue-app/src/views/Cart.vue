@@ -1,14 +1,7 @@
 <template>
   <div class="cart container">
     <Header/>
-    <div class="row">
-      <div class="col-8">
-        <h4>カートの内容</h4>
-      </div>
-      <div class="col">
-        <b-button :to="{ name: 'stocks'}" variant="outline-default">戻る</b-button>
-      </div>
-    </div>
+    <SubTitle subtitle="カートの内容"/>
     <div class="row">
       <div class="col-sm-6 col-md-3" v-for="item in items" :key="item.id">
         <div class="card img-thumbnail">
@@ -33,6 +26,7 @@
 
 <script>
 import Header from '@/components/Header.vue'
+import SubTitle from '@/components/SubTitle.vue'
 import Alert from '@/components/Alert.vue'
 import Shipping from '@/components/Shipping.vue'
 import { mapGetters } from 'vuex'
@@ -41,6 +35,7 @@ export default {
   name: 'cart',
   components: {
     Header,
+    SubTitle,
     Alert,
     Shipping
   },

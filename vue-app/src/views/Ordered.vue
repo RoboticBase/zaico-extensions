@@ -2,14 +2,7 @@
   <div class="cart container">
     <Header/>
     <div v-if="data">
-      <div class="row">
-        <div class="col-8">
-          <h4>注文完了</h4>
-        </div>
-        <div class="col">
-          <b-button variant="outline-default" @click="back">戻る</b-button>
-        </div>
-      </div>
+      <SubTitle subtitle="注文完了"/>
       <p>注文を受け付けました。配送ロボット（{{data.delivery_robot.id}}）が商品を配送します。</p>
       <p>お届け先：{{ data.destination.name }}</p>
       <p>お届けする商品</p>
@@ -34,6 +27,7 @@
 
 <script>
 import Header from '@/components/Header.vue'
+import SubTitle from '@/components/SubTitle.vue'
 import Alert from '@/components/Alert.vue'
 import { mapGetters } from 'vuex'
 
@@ -41,6 +35,7 @@ export default {
   name: 'ordered',
   components: {
     Header,
+    SubTitle,
     Alert
   },
   computed: {

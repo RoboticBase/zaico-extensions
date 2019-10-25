@@ -1,14 +1,7 @@
 <template>
   <div class="histories container">
     <Header/>
-    <div class="row">
-      <div class="col-8">
-        <h4>注文履歴</h4>
-      </div>
-      <div class="col">
-        <b-button :to="{ name: 'stocks'}" variant="outline-default">戻る</b-button>
-      </div>
-    </div>
+    <SubTitle subtitle="注文履歴"/>
     <div v-for="(order, idx) in ordered" :key="idx">
       <b-card no-body class="mx-auto">
         <b-card-header header-tag="header" class="p-1" role="tab">
@@ -35,6 +28,7 @@
 
 <script>
 import Header from '@/components/Header.vue'
+import SubTitle from '@/components/SubTitle.vue'
 import Alert from '@/components/Alert.vue'
 import { mapGetters } from 'vuex'
 import VueQrcode from "@chenfengyuan/vue-qrcode"
@@ -43,6 +37,7 @@ export default {
   name: 'histories',
   components: {
     Header,
+    SubTitle,
     Alert,
     VueQrcode
   },
