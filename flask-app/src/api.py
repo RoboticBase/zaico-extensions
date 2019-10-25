@@ -196,6 +196,7 @@ class ShipmentAPI(RBMixin, MethodView):
                 'category': current_item['category'],
                 'place': current_item['place'],
                 'code': current_item['code'],
+                'item_image': current_item['item_image'],
             })
         destination = next(e for e in DESTINATIONS if e['id'] == int(payload['destination_id']))
 

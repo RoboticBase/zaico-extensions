@@ -16,7 +16,7 @@
       <div class="row">
         <div class="col-sm-6 col-md-3" v-for="item in data.updated" :key="item.id">
           <div class="card img-thumbnail">
-            <img class="card-img-top" src="{{ item.img }}">
+            <img class="card-img-top" :src="item.item_image.url">
             <div class="card-body px-2 py-3">
               <h5 class="card-title">{{ item.title }}</h5>
               <p class="card-text">カテゴリ：{{ item.category }}</p>

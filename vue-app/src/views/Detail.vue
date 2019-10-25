@@ -3,7 +3,7 @@
     <Header/>
     <div v-if="stock">
       <div class="card img-thumbnail">
-        <img class="card-img-top" src="{{ stock.img }}">
+        <img class="card-img-top" :src="stock.item_image.url">
         <div class="card-body px-2 py-3">
           <h5 class="card-title">{{ stock.title }}</h5>
           <p class="card-text">カテゴリ：{{ stock.category }}</p>
