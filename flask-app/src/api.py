@@ -229,6 +229,7 @@ class ShipmentAPI(RBMixin, MethodView):
         return is_compensated, compensated
 
     def _notify_shipment(self, res):
+        res['caller'] = const.CALLER_NAME
         result = requests.post(SHIPMENTAPI_ENDPOINT, headers=self.rb_headers, json=res)
         if 200 <= result.status_code < 300:
             return result.json()
