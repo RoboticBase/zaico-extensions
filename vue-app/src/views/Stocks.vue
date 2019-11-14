@@ -1,37 +1,28 @@
 <template>
   <div class="stocks container">
     <Header/>
-    <h3>在庫引当と出荷指示</h3>
-    <table class="table">
-      <thead>
-        <tr>
-          <th scope="col">JANコード</th>
-          <th scope="col">物品名</th>
-          <th scope="col">カテゴリ</th>
-          <th scope="col">保管場所</th>
-          <th scope="col">現在数量</th>
-          <th scope="col">引当数量</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="stock in stocks" :key="stock.id">
-          <td>{{ stock.code }}</td>
-          <td>{{ stock.title }}</td>
-          <td>{{ stock.category }}</td>
-          <td>{{ stock.place }}</td>
-          <td>{{ parseInt(stock.quantity) + stock.unit }}</td>
-          <td class="form-group"><input type="number" class="form-control" v-model="stock.reservation"/></td>
-        </tr>
-      </tbody>
-    </table>
-    <Shipping/>
+    <div v-if="stocks.length == 0">
+      <span class="text-center">読込中</span>
+    </div>
+    <div v-else class="row">
+      <div class="col-sm-6 col-md-3" v-for="(stock, idx) in stocks" :key="stock.id">
+        <div class="card img-thumbnail">
+          <img class="card-img-top" :src="stock.item_image.url">
+          <div class="card-body px-2 py-3">
+            <h5 class="card-title">{{ stock.title }}</h5>
+            <p class="card-text">倉庫：{{ stock.place }}</p>
+            <p class="card-text">在庫数：{{ parseInt(stock.quantity) + stock.unit }}</p>
+            <p class="mb-0"><b-button :to="{ name: 'detail', params: { stock: stock,  idx: idx}}">詳細</b-button></p>
+          </div>
+        </div>
+      </div>
+    </div>
     <Alert/>
   </div>
 </template>
 
 <script>
 import Header from '@/components/Header.vue'
-import Shipping from '@/components/Shipping.vue'
 import Alert from '@/components/Alert.vue'
 import { mapActions, mapGetters } from 'vuex'
 
@@ -39,17 +30,16 @@ export default {
   name: 'stocks',
   components: {
     Header,
-    Shipping,
     Alert
   },
   created: function () {
     this.listStocksAction()
   },
   computed: {
-    ...mapGetters(['stocks', 'message', 'variant'])
+    ...mapGetters(['stocks'])
   },
   methods: {
     ...mapActions(['listStocksAction']),
-  }
+  },
 }
 </script>
