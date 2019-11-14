@@ -1,11 +1,24 @@
 #!/usr/bin/env python
-
+import json
 import os
+import logging.config
+from logging import getLogger
+
 from flask import Flask
 
 from src import api, const, vue, errors
 
-DEBUG = True
+try:
+    with open(const.LOGGING_JSON, "r") as f:
+        logging.config.dictConfig(json.load(f))
+        if (const.LOG_LEVEL in os.environ and
+                os.environ[const.LOG_LEVEL].upper() in ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']):
+            for handler in getLogger().handlers:
+                if handler.get_name() in const.TARGET_HANDLERS:
+                    handler.setLevel(getattr(logging, os.environ[const.LOG_LEVEL].upper()))
+except FileNotFoundError:
+    print(f'can not open {const.LOGGING_JSON}')
+    pass
 
 app = Flask(__name__,
             static_folder=const.VUE_STATIC_FOLDER,
