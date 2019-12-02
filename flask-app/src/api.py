@@ -1,3 +1,4 @@
+import json
 import os
 from logging import getLogger
 
@@ -15,26 +16,7 @@ ZAICO_HEADER = {
     'Content-Type': 'application/json'
 }
 SHIPMENTAPI_ENDPOINT = os.environ[const.SHIPMENTAPI_ENDPOINT]
-
-DESTINATIONS = [
-    {
-        'id': 0,
-        'name': '',
-    },
-    {
-        'id': 1,
-        'name': '会議室1中',
-    },
-    {
-        'id': 2,
-        'name': '会議室2中',
-    },
-    {
-        'id': 3,
-        'name': '会議室3中',
-    }
-
-]
+DESTINATIONS = json.loads(os.environ[const.DESTINATIONS])
 
 logger = getLogger(__name__)
 
