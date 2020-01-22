@@ -30,3 +30,15 @@ __pycache__/
 .python-version
 instance/
 .webassets-cache
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
