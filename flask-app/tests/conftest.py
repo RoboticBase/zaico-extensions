@@ -11,8 +11,7 @@ from src import const
 def setup_environments():
     os.environ[const.ZAICO_TOKEN] = 'ZAICO_TOKEN'
     os.environ[const.SHIPMENTAPI_ENDPOINT] = 'SHIPMENTAPI_ENDPOINT'
-    os.environ[const.SHIPMENTAPI_TOKEN] = 'SHIPMENTAPI_TOKEN'
-    os.environ[const.DESTINATIONS] = '[]'
+    os.environ[const.DESTINATIONS] = '[{"id": 1, "name": "dest_01"}]'
     yield
 
 

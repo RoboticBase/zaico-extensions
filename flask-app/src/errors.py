@@ -41,3 +41,13 @@ class RBError(Exception):
         self.code = self.status_code
         self.description = f'RBError, status_code={self.status_code}'
         super().__init__(self.description, *args, **kwargs)
+
+
+class LessQuantityError(Exception):
+    def __init__(self, *args, **kwargs):
+        self.status_code = kwargs.pop('status_code')
+        self.current_quantity = kwargs.pop('current_quantity')
+        self.reservation = kwargs.pop('reservation')
+        self.code = self.status_code
+        self.description = f'current quantity({self.current_quantity}) is less than the reservation({self.reservation})'
+        super().__init__(self.description, *args, **kwargs)

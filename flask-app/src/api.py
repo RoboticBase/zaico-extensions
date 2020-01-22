@@ -1,12 +1,13 @@
 import json
 import os
+from urllib.parse import urljoin
 from logging import getLogger
 
 from flask import abort, jsonify, request
 from flask.views import MethodView
 
 from src import const
-from src.errors import RobotBusyError, RBError
+from src.errors import RobotBusyError, RBError, LessQuantityError
 
 import requests
 
@@ -17,6 +18,7 @@ ZAICO_HEADER = {
 }
 SHIPMENTAPI_ENDPOINT = os.environ[const.SHIPMENTAPI_ENDPOINT]
 DESTINATIONS = json.loads(os.environ[const.DESTINATIONS])
+SHIPMENTAPI_TOKEN = os.environ.get(const.SHIPMENTAPI_TOKEN, None)
 
 logger = getLogger(__name__)
 
@@ -67,11 +69,20 @@ class DestinationAPI(MethodView):
 
     def _list(self):
         logger.debug(f'DestinationAPI._list')
+        if not isinstance(DESTINATIONS, list):
+            abort(500, {
+                'message': 'invalid DESTINATIONS',
+            })
         return jsonify(DESTINATIONS)
 
     def _detail(self, destination_id):
         logger.debug(f'DestinationAPI._detail, destination_id={destination_id}')
         try:
+            if not isinstance(DESTINATIONS, list) or \
+                    any([not (isinstance(e, dict) and 'id' in e) for e in DESTINATIONS]):
+                abort(500, {
+                    'message': 'invalid DESTINATIONS',
+                })
             return jsonify(next(e for e in DESTINATIONS if e['id'] == int(destination_id)))
         except StopIteration:
             abort(404, {
@@ -84,33 +95,21 @@ class DestinationAPI(MethodView):
             })
 
 
-class RBMixin:
-    def __init__(self, *args, **kwargs):
-        self._rb_headers = None
-
-    @property
-    def rb_headers(self):
-        if not self._rb_headers:
-            self._rb_headers = {
-                'Content-Type': 'application/json'
-            }
-            if const.SHIPMENTAPI_TOKEN in os.environ:
-                self._rb_headers['Authorization'] = f'Bearer {os.environ[const.SHIPMENTAPI_TOKEN]}'
-        return self._rb_headers
-
-
-class ShipmentAPI(RBMixin, MethodView):
+class ShipmentAPI(MethodView):
     NAME = 'shipmentapi'
 
     def post(self):
         logger.debug(f'ShipmentAPI.post')
         payload = request.json
 
-        if not isinstance(payload, dict):
+        if not (isinstance(payload, dict)
+                and 'items' in payload and isinstance(payload['items'], list)
+                and 'destination_id' in payload):
             abort(400, {
                 'message': 'invalid payload',
             })
 
+        zaico_res = None
         try:
             zaico_res = self._update_zaico(payload)
             logger.info(f'zaico_result {zaico_res}')
@@ -118,29 +117,37 @@ class ShipmentAPI(RBMixin, MethodView):
             rb_res = self._notify_shipment(zaico_res)
             logger.info(f'rb_result {rb_res}')
 
-            zaico_res.update(rb_res)
-            logger.info(f'shipment success, result={zaico_res}')
-            return jsonify(zaico_res), 201
+            res = dict(**zaico_res, **rb_res)
+
+            logger.info(f'shipment success, result={res}')
+            return jsonify(res), 201
+        except LessQuantityError as e:
+            abort(e.status_code, {
+                'message': 'LessQuantityError',
+                'root_cause': str(e),
+            })
         except RobotBusyError as e:
             is_compensated, compensated = self._compensate_zaico(zaico_res)
             if is_compensated:
-                logger.warn(f'shipment failure bacause robot is busy, but compensated successfully compensated={compensated}')
+                logger.warning(f'shipment failure bacause robot is busy, '
+                               f'but compensated successfully compensated={compensated}')
                 return jsonify({'result': 'robot_busy', 'message': str(e), 'robot_id': e.robot_id}), e.status_code
             else:
                 logger.error(f'compensatation of Zaico is failed in RobotBusyError, {compensated}')
                 abort(500, {
-                    'message': 'can not get destination detail',
+                    'message': 'compensatation of Zaico is failed in RobotBusyError',
+                    'compensated': compensated,
                     'root_cause': str(e)
                 })
-        except Exception as e:
+        except RBError as e:
             is_compensated, compensated = self._compensate_zaico(zaico_res)
             if is_compensated:
-                logger.warn(f'shipment failure, but compensated successfully compensated={compensated}')
+                logger.warning(f'shipment failure, but compensated successfully compensated={compensated}')
             else:
                 logger.error(f'compensatation of Zaico is failed, {compensated}')
             abort(500, {
                 'message': 'exception occured when notify shipment',
-                'root_cause': str(e)
+                'root_cause': e.description,
             })
 
     def _update_zaico(self, payload):
@@ -150,11 +157,23 @@ class ShipmentAPI(RBMixin, MethodView):
             'updated': [],
         }
 
+        try:
+            destination = next(e for e in DESTINATIONS if e['id'] == int(payload['destination_id']))
+        except StopIteration:
+            abort(404, {
+                'message': f'destination(id={payload["destination_id"]}) does not found',
+            })
+        except (TypeError, ValueError) as e:
+            abort(404, {
+                'message': 'can not get destination detail',
+                'root_cause': str(e)
+            })
+
         # FIXME: exclusion control
         for elem in payload['items']:
             reservation = int(float(elem.get('reservation', '0')))
             id = elem.get('id', '0')
-            url = const.ZAICO_ENDPOINT + f'{id}/'
+            url = urljoin(const.ZAICO_ENDPOINT, f'{id}/')
 
             result = requests.get(url, headers=ZAICO_HEADER)
             if result.status_code != 200:
@@ -168,9 +187,7 @@ class ShipmentAPI(RBMixin, MethodView):
 
             new_quantity = current_quantity - reservation
             if new_quantity < 0:
-                abort(400, {
-                    'message': f'current quantity ({current_quantity}) is less than the reservation ({reservation})'
-                })
+                raise LessQuantityError(status_code=400, current_quantity=current_quantity, reservation=reservation)
 
             result = requests.put(url, headers=ZAICO_HEADER, json={'quantity': new_quantity})
             if result.status_code not in (200, 201, ):
@@ -192,7 +209,6 @@ class ShipmentAPI(RBMixin, MethodView):
                 'code': current_item['code'],
                 'item_image': current_item['item_image'],
             })
-        destination = next(e for e in DESTINATIONS if e['id'] == int(payload['destination_id']))
 
         res['result'] = 'success'
         res['destination'] = destination
@@ -209,7 +225,7 @@ class ShipmentAPI(RBMixin, MethodView):
         for elem in zaico_res['updated']:
             id = elem['id']
             prev_quantity = elem['prev_quantity']
-            url = const.ZAICO_ENDPOINT + f'{id}/'
+            url = urljoin(const.ZAICO_ENDPOINT, f'{id}/')
 
             result = requests.put(url, headers=ZAICO_HEADER, json={'quantity': prev_quantity})
 
@@ -224,11 +240,17 @@ class ShipmentAPI(RBMixin, MethodView):
 
     def _notify_shipment(self, res):
         res['caller'] = const.CALLER_NAME
-        result = requests.post(SHIPMENTAPI_ENDPOINT, headers=self.rb_headers, json=res)
+        headers = {
+            'Content-Type': 'application/json'
+        }
+        if SHIPMENTAPI_TOKEN is not None:
+            headers['Authorization'] = f'Bearer {SHIPMENTAPI_TOKEN}'
+
+        result = requests.post(SHIPMENTAPI_ENDPOINT, headers=headers, json=res)
         if 200 <= result.status_code < 300:
             return result.json()
         elif result.status_code in [422, 423]:
             j = result.json()
-            raise RobotBusyError(j['message'], status_code=result.status_code, robot_id=j.get('id', None))
+            raise RobotBusyError(j.get('message', ''), status_code=result.status_code, robot_id=j.get('id', None))
         else:
             raise RBError(result.text, status_code=result.status_code)
