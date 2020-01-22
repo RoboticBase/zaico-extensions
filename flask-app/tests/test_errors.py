@@ -35,7 +35,7 @@ class TestErrorHandler:
 
     @pytest.mark.parametrize('status_code, exception, expected, logger_args', [
         (410, errors.RobotBusyError(status_code=410, robot_id='robot_01'),
-         'RobotBUsyError, status_code=410, robot_id=robot_01', ('RobotBUsyError, status_code=410, robot_id=robot_01',)),
+         'RobotBusyError, status_code=410, robot_id=robot_01', ('RobotBusyError, status_code=410, robot_id=robot_01',)),
         (411, errors.RBError(status_code=411),
          'RBError, status_code=411', ('RBError, status_code=411',)),
     ])

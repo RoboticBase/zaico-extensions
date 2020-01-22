@@ -31,7 +31,7 @@ class RobotBusyError(Exception):
         self.status_code = kwargs.pop('status_code')
         self.robot_id = kwargs.pop('robot_id')
         self.code = self.status_code
-        self.description = f'RobotBUsyError, status_code={self.status_code}, robot_id={self.robot_id}'
+        self.description = f'RobotBusyError, status_code={self.status_code}, robot_id={self.robot_id}'
         super().__init__(self.description, *args, **kwargs)
 
 
