@@ -31,7 +31,7 @@ __pycache__/
 instance/
 .webassets-cache
 
-# Unit test / coverage reports
+# Unit test / coverage reports (python)
 htmlcov/
 .tox/
 .coverage
@@ -42,3 +42,6 @@ coverage.xml
 *.cover
 .hypothesis/
 .pytest_cache/
+
+# Unit test / coverage reports (vue)
+**/coverage
