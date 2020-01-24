@@ -5,7 +5,7 @@
         <span class="subtitle">{{ subtitle }}</span>
       </div>
       <div class="col">
-        <b-button :to="{ name: 'stocks'}" variant="outline-default" class="float-right">戻る</b-button>
+        <b-button :to="{ name: 'stocks'}" variant="outline-default" class="float-right back">戻る</b-button>
       </div>
     </div>
   </div>
@@ -15,6 +15,9 @@
 export default {
   name: 'subtitle',
   props: ['subtitle'],
+  data: function () {
+    return {}
+  },
 }
 </script>
 
