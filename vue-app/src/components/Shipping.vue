@@ -3,12 +3,12 @@
     <div class="row form-group">
       <div class="col-sm-8">
         <label for="destination">お届け先:</label>
-        <select id="destination" class="form-control" @input="setSelectedDestination($event.target.value)">
+        <select id="destination" class="form-control" @change="setSelectedDestination($event.target.value)">
           <option v-for="destination in destinations" :key="destination.id" v-bind:value="destination.id">{{ destination.name }}</option>
         </select>
       </div>
       <div class="col-sm-4 align-self-end">
-        <b-button variant="primary" class="float-right" @click="shipping">注文</b-button>
+        <b-button variant="primary" class="float-right order" @click="shipping">注文</b-button>
       </div>
     </div>
     <div v-if="errmsg">
