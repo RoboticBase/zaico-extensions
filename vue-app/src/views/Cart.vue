@@ -43,10 +43,9 @@ export default {
     ...mapGetters(['stocks']),
     items () {
       return this.stocks.filter((stock) => {
-          return stock.reservation != 0
+        return stock.reservation > 0
       })
     },
   },
 }
 </script>
-
