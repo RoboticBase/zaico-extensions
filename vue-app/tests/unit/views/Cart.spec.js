@@ -15,8 +15,6 @@ describe('Cart.vue', () => {
   beforeEach(() => {
     state = {
       stocks: [],
-      message: '',
-      variant: '',
     }
     store = new Vuex.Store({
       state: state,
@@ -26,8 +24,8 @@ describe('Cart.vue', () => {
       getters: {
         stocks: (state) => state.stocks,
         destinations: () => [{id: '', name: ''}, {id: '1', name: 'd01'}],
-        message: (state) => state.message,
-        variant: (state) => state.variant,
+        message: () => '',
+        variant: () => '',
       },
     })
   })

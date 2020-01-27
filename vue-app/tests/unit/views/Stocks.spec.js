@@ -16,8 +16,6 @@ describe('Stocks.vue', () => {
   beforeEach(() => {
     state = {
       stocks: [],
-      message: '',
-      variant: '',
     }
     actions = {
       listStocksAction: jest.fn(),
@@ -27,8 +25,8 @@ describe('Stocks.vue', () => {
       actions: actions,
       getters: {
         stocks: (state) => state.stocks,
-        message: (state) => state.message,
-        variant: (state) => state.variant,
+        message: () => '',
+        variant: () => '',
       },
     })
   })

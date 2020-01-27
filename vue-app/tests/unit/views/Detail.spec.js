@@ -19,14 +19,10 @@ describe('Detail.vue', () => {
     }
 
     store = new Vuex.Store({
-      state: {
-        message: '',
-        variant: '',
-      },
       mutations: mutations,
       getters: {
-        message: (state) => state.message,
-        variant: (state) => state.variant,
+        message: () => '',
+        variant: () => '',
       },
     })
     $router = {
