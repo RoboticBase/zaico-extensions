@@ -11,8 +11,8 @@
           <p class="card-text">JANコード：{{ stock.code }}</p>
           <p class="card-text">倉庫：{{ stock.place }}</p>
           <p class="card-text">在庫数：{{ parseInt(stock.quantity) + stock.unit }}</p>
-          <p class="card-text form-group">注文数：<input type="number" class="form-control" v-model.number="reservation"/></p>
-          <p class="mb-0 form-group"><b-button @click="reserve" variant="outline-primary">カートに入れる</b-button></p>
+          <p class="card-text form-group">注文数：<input type="number" class="form-control reservation" v-model.number="reservation"/></p>
+          <p class="mb-0 form-group"><b-button @click="reserve" variant="outline-primary" class="reserve">カートに入れる</b-button></p>
         </div>
       </div>
     </div>
@@ -39,15 +39,15 @@ export default {
   },
   computed: {
     stock () {
-      return this.$route.params.stock
+      return (this.$route.params && 'stock' in this.$route.params? this.$route.params.stock : undefined)
     },
     idx () {
-      return this.$route.params.idx
+      return (this.$route.params && 'idx' in this.$route.params ? this.$route.params.idx : undefined)
     },
   },
   mounted () {
     if (this.$route.params && this.$route.params.stock) {
-      this.reservation = this.stock.reservation
+      this.reservation = this.stock.reservation !== undefined ? this.stock.reservation : 0
     } else {
       this.$router.push({name: 'stocks'})
     }
