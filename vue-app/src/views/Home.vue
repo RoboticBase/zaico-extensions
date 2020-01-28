@@ -2,7 +2,7 @@
   <div class="home container">
     <Header/>
     <div class="row">
-      <div class="col-sm"><router-link to="/stocks">在庫引当と出荷指示</router-link></div>
+      <div class="col-sm"><router-link class="stock" to="/stocks">在庫引当と出荷指示</router-link></div>
     </div>
   </div>
 </template>

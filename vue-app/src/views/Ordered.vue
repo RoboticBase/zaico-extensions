@@ -1,11 +1,11 @@
 <template>
-  <div class="cart container">
+  <div class="ordered container">
     <Header/>
     <div v-if="data">
       <SubTitle subtitle="注文完了"/>
-      <p>注文を受け付けました。配送ロボット（{{data.delivery_robot.id}}）が商品を配送します。</p>
-      <p>お届け先：{{ data.destination.name }}</p>
-      <p>お届けする商品</p>
+      <p class="msg">注文を受け付けました。配送ロボット（{{data.delivery_robot.id}}）が商品を配送します。</p>
+      <p class="msg">お届け先：{{ data.destination.name }}</p>
+      <p class="msg">お届けする商品</p>
       <div class="row">
         <div class="col-sm-6 col-md-3" v-for="item in data.updated" :key="item.id">
           <div class="card img-thumbnail">
@@ -29,7 +29,6 @@
 import Header from '@/components/Header.vue'
 import SubTitle from '@/components/SubTitle.vue'
 import Alert from '@/components/Alert.vue'
-import { mapGetters } from 'vuex'
 
 export default {
   name: 'ordered',
@@ -40,18 +39,13 @@ export default {
   },
   computed: {
     data () {
-      return this.$route.params.data
+      return (this.$route.params && 'data' in this.$route.params ? this.$route.params.data : undefined)
     },
   },
   mounted () {
     if (!this.data) {
       this.$router.push({name: 'stocks'})
     }
-  },
-  methods: {
-    back () {
-      this.$router.push({name: 'stocks'})
-    },
   },
   beforeRouteLeave (to, from , next) {
     this.$store.commit('resetStocks')

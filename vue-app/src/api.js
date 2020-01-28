@@ -10,7 +10,7 @@ export async function listStocks() {
     return res.data
   } catch (error) {
     // eslint-disable-next-line
-    console.log('error:' + error)
+    console.log('listStocks error: ' + error)
   }
 }
 
@@ -20,7 +20,7 @@ export async function listDestinations() {
     return res.data
   } catch (error) {
     // eslint-disable-next-line
-    console.log('error:' + error)
+    console.log('listDestinations error: ' + error)
   }
 }
 
@@ -36,6 +36,6 @@ export async function postShipment(payload) {
       return {data: error.response.data, is_busy: false, is_navi: true}
     }
     // eslint-disable-next-line
-    console.log('error:' + error)
+    console.log('postShipment error: ' + error)
   }
 }
