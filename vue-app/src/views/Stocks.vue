@@ -2,7 +2,7 @@
   <div class="stocks container">
     <Header/>
     <div v-if="stocks.length == 0">
-      <span class="text-center">読込中</span>
+      <span class="text-center empty-stock">読込中</span>
     </div>
     <div v-else class="row">
       <div class="col-sm-6 col-md-3" v-for="(stock, idx) in stocks" :key="stock.id">
