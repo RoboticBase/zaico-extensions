@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import { listStocks, listDestinations, postShipment } from './api'
+import { listStocks, listDestinations, postShipment } from '@/api'
+import { isArray, isObject } from '@/utils'
 
 Vue.use(Vuex)
 
@@ -15,11 +16,12 @@ const store = new Vuex.Store({
   },
   actions: {
     listStocksAction(context) {
-      if (context.state.stocks.length == 0) {
+      if (isArray(context.state.stocks) && context.state.stocks.length == 0) {
         listStocks().then(data => {
-          let stocks = data.map((elem) => {
-              elem.reservation = 0
-              return elem
+          if (!isArray(data)) return
+          let stocks = data.filter((elem) => isObject(elem)).map((elem) => {
+            elem.reservation = 0
+            return elem
           })
           context.commit('listStocks', stocks)
         })
@@ -34,7 +36,7 @@ const store = new Vuex.Store({
 
     postShipmentAction(context, payload) {
       postShipment(payload).then(res => {
-        if (!res.is_busy && !res.is_navi) {
+        if ('is_busy' in res && !res.is_busy && 'is_navi' in res && !res.is_navi) {
           payload.success(res.data)
         } else if (res.is_busy) {
           let message = '待機中の配送ロボットが無いため、注文は取り消されました。少し待ってからもう一度お試しください。'
@@ -43,9 +45,8 @@ const store = new Vuex.Store({
           let message = '配送ロボット(' + res.data.robot_id + ')は作業中のため、注文は取り消されました。少し待ってからもう一度お試しください。'
           context.commit('updateMessage', {message: message, variant: 'warning'})
           payload.failure(message)
-        }
-        else {
-          throw new Error('unsupported api result')
+        } else {
+          payload.failure('unsupported api result')
         }
       })
     },
@@ -69,7 +70,9 @@ const store = new Vuex.Store({
     },
 
     updateStock(state, val) {
-      state.stocks[val.idx] = val.stock
+      if (state.stocks[val.idx]) {
+        state.stocks[val.idx] = val.stock
+      }
     },
 
     resetStocks(state) {
@@ -77,8 +80,10 @@ const store = new Vuex.Store({
     },
 
     addOrder(state, data) {
-      data.orderDate = (new Date()).toISOString()
-      state.ordered.push(data)
+      if (isArray(state.ordered) && isObject(data)) {
+        data.orderDate = (new Date()).toISOString()
+        state.ordered.push(data)
+      }
     }
   },
   getters: {
