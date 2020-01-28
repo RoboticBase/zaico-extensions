@@ -136,6 +136,7 @@ describe('Histories.vue', () => {
         expect(wrapper.attributes()).toMatchObject({class: 'histories container'})
         expect(wrapper.find('div.histories').find('div.header').exists()).toBeTruthy()
         expect(wrapper.find('div.histories').find('div.subtitle').exists()).toBeTruthy()
+        expect(wrapper.find('div.histories').find('div.subtitle').find('span.subtitle').text()).toMatch('注文履歴')
         expect(wrapper.find('div.histories').find('div.alert').exists()).toBeTruthy()
         const cards = wrapper.find('div.histories').findAll('div.card')
         expect(cards.length).toBe(ordered.length)

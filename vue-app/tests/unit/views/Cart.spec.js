@@ -209,6 +209,7 @@ describe('Cart.vue', () => {
     expect(wrapper.attributes()).toMatchObject({class: 'cart container'})
     expect(wrapper.find('div.cart').find('div.header').exists()).toBeTruthy()
     expect(wrapper.find('div.cart').find('div.subtitle').exists()).toBeTruthy()
+    expect(wrapper.find('div.cart').find('div.subtitle').find('span.subtitle').text()).toMatch('カートの内容')
     expect(wrapper.find('div.cart').find('div.alert').exists()).toBeTruthy()
     if (items.length > 0) {
       expect(wrapper.find('div.cart').find('div.shipping').exists()).toBeTruthy()

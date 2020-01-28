@@ -74,6 +74,7 @@ describe('Detail.vue', () => {
     expect(wrapper.attributes()).toMatchObject({class: 'detail container'})
     expect(wrapper.find('div.detail').find('div.header').exists()).toBeTruthy()
     expect(wrapper.find('div.detail').find('div.subtitle').exists()).toBeTruthy()
+    expect(wrapper.find('div.detail').find('div.subtitle').find('span.subtitle').text()).toMatch('')
     expect(wrapper.find('div.detail').find('div.alert').exists()).toBeTruthy()
     const card = wrapper.find('div.detail').find('div.card')
     expect(card.find('img.card-img-top').attributes('src')).toMatch(stock.item_image.url)
