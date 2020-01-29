@@ -1,20 +1,22 @@
 import flask
 
 import pytest
+import lazy_import
 
 from src import vue
 
+main = lazy_import.lazy_module('main')
 
 TEST_TEMPLATE = '<html><head></head><body>test</body></html>'
 
 
-@pytest.fixture
-def inject_mock(mocker):
-    flask.templating._render = mocker.MagicMock(return_value=TEST_TEMPLATE)
-    yield
+@pytest.fixture(scope='function')
+def tmp_template_folder(tmpdir):
+    fh = tmpdir.join('index.html')
+    fh.write(TEST_TEMPLATE)
+    yield str(tmpdir)
 
 
-@pytest.mark.usefixtures('inject_mock')
 class TestIndex:
 
     @pytest.mark.parametrize('path', [
@@ -23,7 +25,10 @@ class TestIndex:
         '/dummy/',
         '/dummy/dummy',
     ])
-    def test_success(self, app, path):
+    def test_success(self, tmp_template_folder, path):
+        app = main.app
+        app.template_folder = tmp_template_folder
+
         app.register_blueprint(vue.app)
 
         with app.test_client() as client:
