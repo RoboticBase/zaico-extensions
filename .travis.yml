@@ -1,0 +1,16 @@
+language: python, node_js
+python:
+  - "3.7"
+  - "3.8"
+
+node_js:
+  - "10"
+  - "12"
+
+install:
+  - "pip install pipenv --upgrade-strategy=only-if-needed"
+  - "make install"
+
+script:
+  - "make lint"
+  - "make unittest"
