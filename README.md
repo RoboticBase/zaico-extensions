@@ -1,7 +1,7 @@
 # zaico-extensions
 A web application to bridge cloud warehouse service and RoboticBase
 
-[![TravisCI Status](https://travis-ci.org/RoboticBase/zaico-extensions?branch=master)](https://travis-ci.org/RoboticBase/zaico-extensions/)
+[![TravisCI Status](https://travis-ci.org/RoboticBase/zaico-extensions.svg?branch=master)](https://travis-ci.org/RoboticBase/zaico-extensions/)
 
 ## Description
 This application bridges a cloud warehouse service and [RoboticBase](https://github.com/RoboticBase/).
@@ -23,7 +23,7 @@ This application accepts some Environment Variables like below:
 |`ZAICO_TOKEN`|bearer token of cloud warehouse service|YES||
 |`SHIPMENTAPI_ENDPOINT`|the endpoint of shipment rest api on RoboticBase|YES||
 |`SHIPMENTAPI_TOKEn`|the bearer token of shipment rest api on RoboticBase|||
-|`DESTINATIONS`|the list of destinations like `[{"id": 1, "name": "destination1"}, {"id": 2, "name": "destination2"}]` (JSON format string)|YES||
+|`DESTINATIONS`|the list of destinations like below (JSON format string):<br/>`[{"id": 1, "name": "destination1"}, {"id": 2, "name": "destination2"}]`|YES||
 
 ## License
 
