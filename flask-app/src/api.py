@@ -117,7 +117,9 @@ class ShipmentAPI(MethodView):
             rb_res = self._notify_shipment(zaico_res)
             logger.info(f'rb_result {rb_res}')
 
-            res = dict(**zaico_res, **rb_res)
+            res = {}
+            res.update(zaico_res)
+            res.update(rb_res)
 
             logger.info(f'shipment success, result={res}')
             return jsonify(res), 201
