@@ -1,5 +1,5 @@
 # zaico-extensions
-A web application to bridge cloud warehouse service and RoboticBase
+A web application to bridge cloud inventory control service and RoboticBase
 
 [![TravisCI Status](https://travis-ci.org/RoboticBase/zaico-extensions.svg?branch=master)](https://travis-ci.org/RoboticBase/zaico-extensions/)
 
